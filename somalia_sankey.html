@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Somalia Food Price Sankey</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-sankey/0.12.3/d3-sankey.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        #container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .node rect {
+            cursor: pointer;
+            fill-opacity: 0.9;
+            shape-rendering: crispEdges;
+        }
+        .node text {
+            pointer-events: none;
+            font-size: 12px;
+            fill: #333;
+        }
+        .link {
+            fill: none;
+            stroke: #000;
+            stroke-opacity: 0.2;
+        }
+        .link:hover {
+            stroke-opacity: 0.5;
+        }
+        #status {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #e3f2fd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        #fileInput {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            background-color: #fafafa;
+        }
+        #fileInput input {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Somalia Food Price Breakdown</h1>
+        <div class="subtitle">Average USD prices by commodity category</div>
+        
+        <div id="fileInput">
+            <strong>Upload your CSV file:</strong><br>
+            <input type="file" id="csvFile" accept=".csv">
+        </div>
+        
+        <div id="status">Please upload your food_prices.csv file</div>
+        <svg id="sankey"></svg>
+    </div>
+
+    <script>
+        // Configuration
+        const width = 1100;
+        const height = 600;
+        const margin = {top: 20, right: 200, bottom: 20, left: 200};
+
+        // Create SVG
+        const svg = d3.select("#sankey")
+            .attr("width", width)
+            .attr("height", height);
+
+        // File input handler
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('status').innerHTML = 'Loading data...';
+                
+                Papa.parse(file, {
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true,
+                    transformHeader: (h) => h.trim(),
+                    complete: function(results) {
+                        processData(results.data);
+                    },
+                    error: function(error) {
+                        document.getElementById('status').innerHTML = 
+                            `<span style="color: red;">Error parsing CSV: ${error.message}</span>`;
+                    }
+                });
+            }
+        });
+
+        function processData(data) {
+            // Clear previous visualization
+            svg.selectAll("*").remove();
+            
+            // Filter for Somalia (SOM) only
+            const somaliaData = data.filter(row => 
+                row.countryiso3 === 'SOM' && 
+                row.category && 
+                typeof row.usdprice === 'number' && 
+                !isNaN(row.usdprice)
+            );
+
+            if (somaliaData.length === 0) {
+                document.getElementById('status').innerHTML = 
+                    '<span style="color: red;">No data found for Somalia (SOM)</span>';
+                return;
+            }
+
+            // Group by category and calculate averages
+            const categoryMap = {};
+            somaliaData.forEach(row => {
+                if (!categoryMap[row.category]) {
+                    categoryMap[row.category] = {sum: 0, count: 0};
+                }
+                categoryMap[row.category].sum += row.usdprice;
+                categoryMap[row.category].count += 1;
+            });
+
+            const categoryAverages = Object.keys(categoryMap).map(category => ({
+                category: category,
+                avg_price: categoryMap[category].sum / categoryMap[category].count
+            }));
+
+            // Calculate overall average (mean of category averages)
+            const totalAvg = categoryAverages.reduce((sum, cat) => sum + cat.avg_price, 0) / categoryAverages.length;
+
+            // Update status
+            document.getElementById('status').innerHTML = 
+                `Showing data for Somalia | Overall Average: $${totalAvg.toFixed(2)} | Categories: ${categoryAverages.length}`;
+
+            // Create Sankey data structure
+            createSankey(totalAvg, categoryAverages);
+        }
+
+        function createSankey(totalAvg, categoryAverages) {
+            console.log('Creating Sankey with:', {totalAvg, categoryCount: categoryAverages.length});
+            
+            // Create nodes
+            const nodes = [
+                {name: `Overall Average\n${totalAvg.toFixed(2)}`}
+            ];
+            
+            categoryAverages.forEach(cat => {
+                nodes.push({
+                    name: `${cat.category}\n${cat.avg_price.toFixed(2)}`
+                });
+            });
+
+            console.log('Nodes:', nodes);
+
+            // Create links from total to each category
+            // Use a normalized value that sums to a reasonable total
+            const links = categoryAverages.map((cat, i) => ({
+                source: nodes[0].name,  // Use node name instead of index
+                target: nodes[i + 1].name,  // Use node name instead of index
+                value: cat.avg_price / 10  // Scale down for better visualization
+            }));
+            
+            console.log('Links:', links);
+
+            // Create sankey generator
+            const sankey = d3.sankey()
+                .nodeId(d => d.name)  // This tells sankey to use 'name' as the identifier
+                .nodeWidth(20)
+                .nodePadding(30)
+                .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]]);
+
+            // Generate the sankey diagram
+            const graph = sankey({
+                nodes: nodes.map(d => Object.assign({}, d)),
+                links: links.map(d => Object.assign({}, d))
+            });
+            
+            console.log('Sankey graph generated:', graph);
+            console.log('Node positions:', graph.nodes.map(n => ({name: n.name, x0: n.x0, y0: n.y0})));
+
+            // Color scale
+            const color = d3.scaleOrdinal()
+                .domain(categoryAverages.map(d => d.category))
+                .range(d3.schemeCategory10);
+
+            // Draw links
+            const linkGroup = svg.append("g")
+                .attr("fill", "none")
+                .selectAll("path")
+                .data(graph.links)
+                .join("path")
+                .attr("class", "link")
+                .attr("d", d3.sankeyLinkHorizontal())
+                .attr("stroke", d => color(graph.nodes[d.target.index].name))
+                .attr("stroke-width", d => Math.max(2, d.width))
+                .attr("stroke-opacity", 0.3);
+                
+            linkGroup.append("title")
+                .text(d => `${d.source.name} → ${d.target.name}\n${d.value.toFixed(2)}`);
+            
+            console.log('Links drawn:', linkGroup.size());
+
+            // Draw nodes
+            const node = svg.append("g")
+                .selectAll("g")
+                .data(graph.nodes)
+                .join("g")
+                .attr("class", "node");
+
+            node.append("rect")
+                .attr("x", d => d.x0)
+                .attr("y", d => d.y0)
+                .attr("height", d => Math.max(1, d.y1 - d.y0))
+                .attr("width", d => d.x1 - d.x0)
+                .attr("fill", (d, i) => i === 0 ? "#555" : color(d.name))
+                .attr("stroke", "#000")
+                .attr("stroke-width", 1);
+                
+            node.append("title")
+                .text(d => d.name);
+                
+            console.log('Nodes drawn:', node.size());
+
+            // Add labels
+            node.append("text")
+                .attr("x", d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
+                .attr("y", d => (d.y1 + d.y0) / 2)
+                .attr("dy", "0.35em")
+                .attr("text-anchor", d => d.x0 < width / 2 ? "start" : "end")
+                .style("font-weight", (d, i) => i === 0 ? "bold" : "normal")
+                .selectAll("tspan")
+                .data(d => d.name.split('\n'))
+                .join("tspan")
+                .attr("x", function() {
+                    const parent = d3.select(this.parentNode);
+                    return parent.attr("x");
+                })
+                .attr("dy", (d, i) => i === 0 ? 0 : "1.2em")
+                .text(d => d);
+        }
+    </script>
+</body>
+</html>
