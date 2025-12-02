@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Global Food Prices</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: lightgray;
+        }
+        h1 { margin-bottom: 5px; }
+        .subtitle { color: #666; margin-bottom: 40px; }
+        h2 { margin-top: 50px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>DS4200: Global Food Price Analysis</h1>
+    <p class="subtitle">By: Shreesh Dassarkar, Kenneth Mbuga-Kazibwe, Rayd Hussain</p>
+
+    <h2>Visualization 1: Commodity Category prices by Region</h2>
+    <iframe src="categoryvregion.html"></iframe>
+
+    <h2>Visualization 2: Average Food Price by Country Treemap</h2>
+    <iframe src="price_treemap.html"></iframe>
+    
+    <h2>Visualization 3: Average Food Price by Country Chloropleth Map</h2>
+    <iframe src="chloropleth_map.html"></iframe>
+    
+    <h2>Visualization 4: Somalia Price Breakdown</h2>
+    <p class="subtitle">As Somalia has the highest average price by country, there is reason to see the breakdown of prices by category</p>
+    <iframe src="somalia_sankey.html"></iframe>
+
+    <h2>Takeaways</h2>
+    <p class="subtitle">There are a few main takeaways from these visualizations. The first being that, in general, meat, fish, and
+        eggs are the most expensive commodities. Referencing the treemap, some of the more expensive livestock include goats, sheep, and camels. Differences
+        in prices across countries reflect geographic and situational differences properly (Goat is more expensive in Somalia than Mauritania, etc.).
+        Another takeaway is that East Africa seems to be the most geographically affected region by food insecurity, as reflected by more orange and red on the heatmap.
+        Of the East African nations, Somalia is most distressed with a significantly higher average commodity price than even neighboring countries. These are important observations
+        and can be leveraged to address price issues amongst certain commodities and in certain areas.
+
+    </p>
+</body>
+</html>
