@@ -27,7 +27,7 @@
         }
         .subtitle {
             color: #666;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .node rect {
             cursor: pointer;
@@ -69,14 +69,17 @@
 <body>
     <div id="container">
         <h1>Somalia Food Price Breakdown</h1>
-        <div class="subtitle">Average USD prices by commodity category</div>
+        <div class="subtitle">Average USD prices by commodity category. Due to difficulties with D3, access the data here:
+            <a href="https://drive.google.com/file/d/1NF3hBzXJqZtHw9zoV8ccqURy7yRJaPK3/view?usp=sharing">csv file</a>
+        </div>
         
         <div id="fileInput">
             <strong>Upload your CSV file:</strong><br>
             <input type="file" id="csvFile" accept=".csv">
         </div>
         
-        <div id="status">Please upload your food_prices.csv file</div>
+        <div id="status">Please upload the csv file</div>
+        
         <svg id="sankey"></svg>
     </div>
 
@@ -96,6 +99,7 @@
             const file = e.target.files[0];
             if (file) {
                 document.getElementById('status').innerHTML = 'Loading data...';
+                document.getElementById('status').style.backgroundColor = '#fff3cd';
                 
                 Papa.parse(file, {
                     header: true,
@@ -108,6 +112,7 @@
                     error: function(error) {
                         document.getElementById('status').innerHTML = 
                             `<span style="color: red;">Error parsing CSV: ${error.message}</span>`;
+                        document.getElementById('status').style.backgroundColor = '#f8d7da';
                     }
                 });
             }
@@ -128,6 +133,7 @@
             if (somaliaData.length === 0) {
                 document.getElementById('status').innerHTML = 
                     '<span style="color: red;">No data found for Somalia (SOM)</span>';
+                document.getElementById('status').style.backgroundColor = '#f8d7da';
                 return;
             }
 
@@ -152,6 +158,7 @@
             // Update status
             document.getElementById('status').innerHTML = 
                 `Showing data for Somalia | Overall Average: $${totalAvg.toFixed(2)} | Categories: ${categoryAverages.length}`;
+            document.getElementById('status').style.backgroundColor = '#d4edda';
 
             // Create Sankey data structure
             createSankey(totalAvg, categoryAverages);
@@ -162,30 +169,29 @@
             
             // Create nodes
             const nodes = [
-                {name: `Overall Average\n${totalAvg.toFixed(2)}`}
+                {name: `Overall Average\n$${totalAvg.toFixed(2)}`}
             ];
             
             categoryAverages.forEach(cat => {
                 nodes.push({
-                    name: `${cat.category}\n${cat.avg_price.toFixed(2)}`
+                    name: `${cat.category}\n$${cat.avg_price.toFixed(2)}`
                 });
             });
 
             console.log('Nodes:', nodes);
 
             // Create links from total to each category
-            // Use a normalized value that sums to a reasonable total
             const links = categoryAverages.map((cat, i) => ({
-                source: nodes[0].name,  // Use node name instead of index
-                target: nodes[i + 1].name,  // Use node name instead of index
-                value: cat.avg_price / 10  // Scale down for better visualization
+                source: nodes[0].name,
+                target: nodes[i + 1].name,
+                value: cat.avg_price / 10
             }));
             
             console.log('Links:', links);
 
             // Create sankey generator
             const sankey = d3.sankey()
-                .nodeId(d => d.name)  // This tells sankey to use 'name' as the identifier
+                .nodeId(d => d.name)
                 .nodeWidth(20)
                 .nodePadding(30)
                 .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]]);
@@ -197,7 +203,6 @@
             });
             
             console.log('Sankey graph generated:', graph);
-            console.log('Node positions:', graph.nodes.map(n => ({name: n.name, x0: n.x0, y0: n.y0})));
 
             // Color scale
             const color = d3.scaleOrdinal()
@@ -217,7 +222,7 @@
                 .attr("stroke-opacity", 0.3);
                 
             linkGroup.append("title")
-                .text(d => `${d.source.name} → ${d.target.name}\n${d.value.toFixed(2)}`);
+                .text(d => `${d.source.name} → ${d.target.name}\n$${d.value.toFixed(2)}`);
             
             console.log('Links drawn:', linkGroup.size());
 

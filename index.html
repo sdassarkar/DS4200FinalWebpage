@@ -24,26 +24,64 @@
 <body>
     <h1>DS4200: Global Food Price Analysis</h1>
     <p class="subtitle">By: Shreesh Dassarkar, Kenneth Mbuga-Kazibwe, Rayd Hussain</p>
+    <p class="subtitle">
+        Our analysis revolves around food prices globally. We aim to discover geographic trends, as well as indicators that affect pricing, 
+        both within countries and on a global level. To do so, our data comes from the Humanitarian Data Exchange, 
+        powered by the United Nations Office for the Coordination of Human Affairs.
+    </p>
 
     <h2>Visualization 1: Commodity Category prices by Region</h2>
     <iframe src="categoryvregion.html"></iframe>
+    <p class="subtitle">
+        From this chart, the primary takeaway is that meat, fish, and eggs seem to
+        be the most expensive commodity across all regions. Meanwhile, vegetables and fruit seem to
+        be the least expensive across regions. There is some variance of course, with oils and fats also beign an expensive
+        category, sometimes even the most expensive. This makes some intuitive sense: meat production incurs higher costs (feed, land, processing, etc.) than
+        growing fruits and vegetables, regardless of specific geographic factors.
+    </p>
 
     <h2>Visualization 2: Average Food Price by Country Treemap</h2>
     <iframe src="price_treemap.html"></iframe>
+    <p class="subtitle">
+        There are not many high level insights to be gleaned from this treemap. It more so just specifies certain commodities and identifies
+        the more expensive ones in a country. The biggest takeaway is that livestock in specific seems to be more expensive (tagging along with the notion that meats are more expensive in general from the previous graph).
+        However, there are a couple things that stick out. Goat Livestock seems to be disproportionately expensive in Somalia.
+        Other countries have expensive livestock (sheep, camel), but none reach the level that goat in Somalia reached. This is potential cause for analysis by health and aid agencies, as well as the Somali government.
+    </p>
     
     <h2>Visualization 3: Average Food Price by Country Chloropleth Map</h2>
     <iframe src="chloropleth_map.html"></iframe>
+    <p class="subtitle">
+        Going off the last visualization, the country with the highest average commodity price is clearly Somalia.
+        From the chloropleth map, the only additional trend that emerges is that the Eastern African countries (neighbioring Somalia) seem to higher prices than average as well.
+        This could indicate a geographic trend, specifically that something in the region is potentially ;eading to higher prices.
+    </p>
     
     <h2>Visualization 4: Somalia Price Breakdown</h2>
     <p class="subtitle">As Somalia has the highest average price by country, there is reason to see the breakdown of prices by category</p>
     <iframe src="somalia_sankey.html"></iframe>
+    <p class="subtitle">
+        This is just a detailed view into Somalia's price breakdown. In line with visualization 2, meats seem to be disproportionately more expensive than any other
+        commodity category, giving cause for concern.
+    </p>
+
+    <h2>Visualization 5: Average Food Price vs. GDP Scatterplot</h2>
+    <iframe src="gdpvsfoodprices.html"></iframe>
+    <p class="subtitle">
+        Intuition would have us believe that countries with higher GDPs would have higher prices (more spending -> more demand -> higher prices).
+        This suggest that the data likely reflects local market conditions in specific regions rather than national wealth levels. Higher GDP countries may have better 
+        supply chains, subsidies, or market efficiency 
+        that keep food prices stable despite higher purchasing power, while lower GDP countries may face 
+        supply disruptions, transportation costs, or market inefficiencies that drive prices up regardless of demand.
+    </p>
 
     <h2>Takeaways</h2>
     <p class="subtitle">There are a few main takeaways from these visualizations. The first being that, in general, meat, fish, and
         eggs are the most expensive commodities. Referencing the treemap, some of the more expensive livestock include goats, sheep, and camels. Differences
         in prices across countries reflect geographic and situational differences properly (Goat is more expensive in Somalia than Mauritania, etc.).
         Another takeaway is that East Africa seems to be the most geographically affected region by food insecurity, as reflected by more orange and red on the heatmap.
-        Of the East African nations, Somalia is most distressed with a significantly higher average commodity price than even neighboring countries. These are important observations
+        Of the East African nations, Somalia is most distressed with a significantly higher average commodity price than even neighboring countries. On a more macroeconomic
+        level, there seems to be no clear relationship between commodity price and GDP, suggesting country-level efficiencies or inefficiencies driving commodity prices, something that is not explicitly clear from our data. In general, these are important observations
         and can be leveraged to address price issues amongst certain commodities and in certain areas.
 
     </p>
